@@ -11,8 +11,8 @@ The ISA uses a clean **4‑bit opcode space** (0000–1111).
 ### 1. Memory Access
 | Opcode | Binary | Mnemonic | Description |
 |--------|--------|----------|-------------|
-| 0x0    | 0000   | LDR R, [Rp]  | Load from memory at register pointer into R |
-| 0x1    | 0001   | STR R, [Rp]  | Store R into memory at register pointer |
+| 0x0    | 0000   | LDR R, [Rp+off] | Load from memory at register pointer + offset into R |
+| 0x1    | 0001   | STR R, [Rp+off] | Store R into memory at register pointer + offset |
 
 ### 2. Data Movement
 | Opcode | Binary | Mnemonic | Description |
@@ -25,24 +25,24 @@ The ISA uses a clean **4‑bit opcode space** (0000–1111).
 |--------|--------|----------|-------------|
 | 0x4    | 0100   | ADD R1, R2 | R1 = R1 + R2 (Flags updated) |
 | 0x5    | 0101   | SUB R1, R2 | R1 = R1 - R2 (Flags updated) |
-| 0x6    | 0110   | MUL R1, R2 | R1 = R1 × R2 (Flags updated) |
-| 0x7    | 0111   | DIV R1, R2 | R1 = R1 ÷ R2 (Flags updated) |
 
 ### 4. Logic
 | Opcode | Binary | Mnemonic | Description |
 |--------|--------|----------|-------------|
-| 0x8    | 1000   | AND R1, R2 | Bitwise AND (Flags updated) |
-| 0x9    | 1001   | OR R1, R2  | Bitwise OR (Flags updated) |
-| 0xA    | 1010   | XOR R1, R2 | Bitwise XOR (Flags updated) |
+| 0x6    | 0110   | AND R1, R2 | Bitwise AND (Flags updated) |
+| 0x7    | 0111   | OR R1, R2  | Bitwise OR (Flags updated) |
+| 0x8    | 1000   | XOR R1, R2 | Bitwise XOR (Flags updated) |
 
 ### 5. Control Flow & System
 | Opcode | Binary | Mnemonic | Description |
 |--------|--------|----------|-------------|
-| 0xB    | 1011   | JMP R       | Jump to address in register |
-| 0xC    | 1100   | BRH cond, R | Branch on condition (EQL, NEQ, GT, LT, GEQ, LEQ) to address in register |
-| 0xD    | 1101   | PUSH R      | Push register value into stack memory |
-| 0xE    | 1110   | POP R       | Pop value from stack memory into register |
-| 0xF    | 1111   | INT n       | Software interrupt (trigger IRQn handler) |
+| 0x9    | 1001   | JMP cond, R | Jump or branch on condition (EQL, NEQ, GT, LT, GEQ, LEQ) to address in register |
+| 0xA    | 1010   | PUSH R      | Push register value into stack memory |
+| 0xB    | 1011   | POP R       | Pop value from stack memory into register |
+| 0xC    | 1100   | INP R, port | Read from I/O port into register |
+| 0xD    | 1101   | OUT port, R | Write register value to I/O port |
+| 0xE    | 1110   | TRAP #n     | Trap to fixed handler vector (system call/exception) |
+| 0xF    | 1111   | RET         | Return from subroutine or trap (restore PC from stack/register) |
 
 ---
 
@@ -50,28 +50,29 @@ The ISA uses a clean **4‑bit opcode space** (0000–1111).
 
 | Opcode (Binary) | Opcode (Hex) | Mnemonic        | Operands        | Description |
 |-----------------|--------------|-----------------|-----------------|-------------|
-| `0000`          | 0x0          | **LDR R, [Rp]**  | R, Rp           | Load word from memory at register pointer Rp into R |
-| `0001`          | 0x1          | **STR R, [Rp]** | R, Rp           | Store word from R into memory at register pointer Rp |
+| `0000`          | 0x0          | **LDR R, [Rp+off]** | R, Rp, offset | Load word from memory at register pointer Rp + offset into R |
+| `0001`          | 0x1          | **STR R, [Rp+off]** | R, Rp, offset | Store word from R into memory at register pointer Rp + offset |
 | `0010`          | 0x2          | **MOV R1, R2**  | R1, R2          | Copy register contents |
 | `0011`          | 0x3          | **LDI R, #const** | R, const      | Load immediate constant into register |
 | `0100`          | 0x4          | **ADD R1, R2**  | R1, R2          | Add registers (Flags updated) |
 | `0101`          | 0x5          | **SUB R1, R2**  | R1, R2          | Subtract registers (Flags updated) |
-| `0110`          | 0x6          | **MUL R1, R2**  | R1, R2          | Multiply registers (Flags updated) |
-| `0111`          | 0x7          | **DIV R1, R2**  | R1, R2          | Divide registers (Flags updated) |
-| `1000`          | 0x8          | **AND R1, R2**  | R1, R2          | Bitwise AND (Flags updated) |
-| `1001`          | 0x9          | **OR R1, R2**   | R1, R2          | Bitwise OR (Flags updated) |
-| `1010`          | 0xA          | **XOR R1, R2**  | R1, R2          | Bitwise XOR (Flags updated) |
-| `1011`          | 0xB          | **JMP R**       | R               | Jump to address stored in register |
-| `1100`          | 0xC          | **BRH cond, R** | cond, R         | Branch on condition (EQL, NEQ, GT, LT, GEQ, LEQ) to address in register |
-| `1101`          | 0xD          | **PUSH R**      | R               | Push register value into stack memory |
-| `1110`          | 0xE          | **POP R**       | R               | Pop value from stack memory into register |
-| `1111`          | 0xF          | **INT n**       | n               | Software interrupt (trigger IRQn handler) |
+| `0110`          | 0x6          | **AND R1, R2**  | R1, R2          | Bitwise AND (Flags updated) |
+| `0111`          | 0x7          | **OR R1, R2**   | R1, R2          | Bitwise OR (Flags updated) |
+| `1000`          | 0x8          | **XOR R1, R2**  | R1, R2          | Bitwise XOR (Flags updated) |
+| `1001`          | 0x9          | **JMP cond, R** | cond, R         | Jump or branch on condition to address in register |
+| `1010`          | 0xA          | **PUSH R**      | R               | Push register value into stack memory |
+| `1011`          | 0xB          | **POP R**       | R               | Pop value from stack memory into register |
+| `1100`          | 0xC          | **INP R, port** | R, port         | Read from I/O port into register |
+| `1101`          | 0xD          | **OUT port, R** | port, R         | Write register value to I/O port |
+| `1110`          | 0xE          | **TRAP #n**     | n               | Trap to fixed handler vector (system call/exception) |
+| `1111`          | 0xF          | **RET**         | —               | Return from subroutine or trap (restore PC from stack/register) |
 
 ---
 
 ## 📜 Encoding Notes
 - **Opcode field**: 4 bits (selects one of 16 instructions)  
 - **Register fields**: 6 bits each (up to 64 registers)  
+- **Offset field**: included only in LDR/STR (for array/pointer arithmetic)  
 - **Immediate/addr fields**: variable length depending on instruction format  
 - **Instruction word size**: typically 16 bits for compactness  
 
