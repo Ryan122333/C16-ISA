@@ -59,7 +59,7 @@ The ISA uses a clean **4‑bit opcode space** (0000–1111).
 | `0110`          | 0x6          | **AND R1, R2**  | R1, R2          | Bitwise AND (Flags updated) |
 | `0111`          | 0x7          | **OR R1, R2**   | R1, R2          | Bitwise OR (Flags updated) |
 | `1000`          | 0x8          | **XOR R1, R2**  | R1, R2          | Bitwise XOR (Flags updated) |
-| `1001`          | 0x9          | **JZ, R**       | cond, R         | Jump or branch on condition to address in register |
+| `1001`          | 0x9          | **JZ R**        | cond, R         | Jump or branch on condition to address in register |
 | `1010`          | 0xA          | **PUSH R**      | R               | Push register value into stack memory |
 | `1011`          | 0xB          | **POP R**       | R               | Pop value from stack memory into register |
 | `1100`          | 0xC          | **INP R, port** | R, port         | Read from I/O port into register |
