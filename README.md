@@ -50,8 +50,8 @@ The ISA uses a clean **4‑bit opcode space** (0000–1111).
 
 | Opcode (Binary) | Opcode (Hex) | Mnemonic        | Operands        | Description |
 |-----------------|--------------|-----------------|-----------------|-------------|
-| `0000`          | 0x0          | **LDR R, [Rp]** | R, Rp, offset | Load word from memory at the address stored in register Rp into  |
-| `0001`          | 0x1          | **STR R, [Rp]** | R, Rp, offset | Store word from R into memory at the address stored in register Rp |
+| `0000`          | 0x0          | **LDR R, [Rp]** | R, Rp,          | Load word from memory at the address stored in register Rp into R |
+| `0001`          | 0x1          | **STR R, [Rp]** | R, Rp,          | Store word from R into memory at the address stored in register Rp|
 | `0010`          | 0x2          | **MOV R1, R2**  | R1, R2          | Copy register contents |
 | `0011`          | 0x3          | **LDI R, #const** | R, const      | Load immediate constant into register |
 | `0100`          | 0x4          | **ADD R1, R2**  | R1, R2          | Add registers (Flags updated) |
